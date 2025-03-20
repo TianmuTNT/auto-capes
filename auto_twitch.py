@@ -51,6 +51,8 @@ def get_cape():
                 page.goto("https://www.twitch.tv/mrhugo")
                 page.wait_for_load_state("domcontentloaded", timeout=50000)
 
+                page.get_by_role("button", name="暂停（空格/k）").click()
+                
                 page.locator("[data-a-target='signup-button']").click()
                 g = generate()
                 print(f"({current_thread().name}) Name: {g}")
