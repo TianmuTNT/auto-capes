@@ -73,7 +73,7 @@ def get_cape():
                 setting_button.wait_for()
                 setting_button.click()
                 page.locator("[data-a-target='player-settings-menu-item-quality']").click()
-                page.locator("xpath=/html/body/div[5]/div/div/div/div/div[1]/div/div/div[3]/div[5]/div/div/div/div/label").click()
+                page.locator("xpath=/html/body/div[5]/div/div/div/div/div[1]/div/div/div[3]/div[6]/div/div").click()
                 page.get_by_label("静音（m）").first.click()
 
                 page.locator("//*[@id=\"root\"]/div/div[1]/nav/div/div[3]/div[3]/div/div[2]/div/div[1]/div/button").click(timeout=50000)
