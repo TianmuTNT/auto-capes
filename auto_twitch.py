@@ -4,17 +4,18 @@ from random import choices
 from string import ascii_letters, digits
 from poplib import POP3_SSL
 from email import message_from_bytes
+from time import sleep
 
-num_threads = 3
+num_threads = 5
 
 def generate():
     return "".join(choices(ascii_letters + digits, k=10))
 
 def get_code(g, num):
-    host = "pop.xxx.com"
+    host = "pop.yourmail.com"
     port = 995
-    username = "xxx@yourmail.com"
-    password = "xxx"
+    username = "you@yourmail.com"
+    password = "yourpassword" # 这里几项要改，邮箱开启pop3
     pop_server = POP3_SSL(host, port)
     pop_server.user(username)
     pop_server.pass_(password)
@@ -33,11 +34,12 @@ def get_code(g, num):
         except Exception:
             continue
     pop_server.quit()
+    sleep(1)
     return get_code(g, num)
 
 def get_cape():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, channel="chrome")
+        browser = p.chromium.launch(headless=False, channel="chrome", args=["--mute-audio"])
         while True:
             try:
                 context = browser.new_context(no_viewport=True)
@@ -47,18 +49,21 @@ def get_cape():
 
                 page.locator("[data-a-target='signup-button']").click()
                 g = generate()
+                print(f"({current_thread().name}) {g}")
                 page.locator("[id='signup-username']").fill(g)
                 page.locator("[id='password-input']").fill(g)
                 page.locator("xpath=/html/body/div[3]/div/div/div/div/div/div[1]/div/div/div/div[2]/form/div/div[3]/div/div[2]/div[1]/div/select").select_option("2000")
                 page.locator("[data-a-target='birthday-month-select']").select_option("1")
                 page.locator("[data-a-target='birthday-date-input']").select_option("1")
                 page.locator("[data-a-target='signup-phone-email-toggle']").click()
-                page.locator("[id='email-input']").fill(g+"@yourdomain.com")
+                page.locator("[id='email-input']").fill(g+"@yourdomain.com") # 这里要改成你域名，cf配置转发
                 page.locator("[data-a-target='passport-signup-button']").click()
 
+                code_input = page.get_by_role("textbox", name="数字 1")
+                code_input.wait_for()
                 code = get_code(g, num_threads)
                 print(f"({current_thread().name}) {code}")
-                page.get_by_role("textbox", name="数字 1").fill(code)
+                code_input.fill(code)
 
                 setting_button = page.get_by_role("button", name="设置", exact=True)
                 setting_button.wait_for()
@@ -84,7 +89,7 @@ if __name__ == "__main__":
     threads = []
 
     for i in range(num_threads):
-        thread = Thread(target=get_cape, name=f"{i+1:03d}")
+        thread = Thread(target=get_cape, name=f"{i+1}")
         threads.append(thread)
         thread.start()
 
